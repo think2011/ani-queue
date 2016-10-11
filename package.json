@@ -1,0 +1,19 @@
+{
+  "name": "ani-queue",
+  "version": "1.0.0",
+  "description": "配合 Animate.css 使用的动画队列工具",
+  "main": "ani-queue.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/think2011/ani-queue.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/think2011/ani-queue/issues"
+  },
+  "homepage": "https://github.com/think2011/ani-queue#readme"
+}
