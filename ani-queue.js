@@ -12,26 +12,44 @@
 }(this, function () {
     var AniQueue = function () {
         this.queue = []
+        this.elemTask = []
     }
 
     AniQueue.prototype = {
         construct: AniQueue,
 
         start: function (cb) {
-            var elemTask = this.queue.filter(function (item) {
+            this.elemTask = this.queue.filter(function (item) {
                 return item.type === 'add'
             })
-            elemTask.forEach(function (item) {
-                $(item.params[0]).hide()
-            })
+            this._batchAction('hide')
+            this._execute(cb)
+        },
 
-            this._execute(function () {
-                elemTask.forEach(function (item) {
-                    $(item.params[0]).removeClass(item.params[1]).removeClass('animated').css('animationDuration','')
-                })
+        _batchAction: function (action) {
+            var that = this
+            var elemTask = this.elemTask
 
-                cb && cb()
-            })
+            var fnMap = {
+                hide: function () {
+                    elemTask.forEach(function (item) {
+                        $(item.params[0]).hide()
+                    })
+                },
+
+                restore: function (task) {
+                    if(task === elemTask[elemTask.length-1]) {
+                        elemTask.forEach(function (item) {
+                            $(item.params[0]).removeClass(item.params[1]).removeClass('animated').css('animationDuration','')
+                        })
+
+                        that.elemTask = []
+                    }
+                }
+            }
+
+
+            fnMap[action].apply(this,Array.prototype.slice.call(arguments,1))
         },
 
         _execute: function (cb) {
@@ -51,20 +69,14 @@
                 case 'add':
                     var $elem = $(params[0])
 
-
-                    $elem
-                        .show()
-                        .addClass(params[1]).addClass('animated')
-
+                    $elem.show().addClass(params[1]).addClass('animated')
                     if(params[2] !== undefined) $elem.css('animationDuration', params[2] + 's')
 
-                    if(this.queue.length === 0) {
-                        $elem.on('webkitAnimationEnd', function () {
-                            _cb()
-                        })
-                    } else {
-                        _cb()
-                    }
+                    $elem.on('webkitAnimationEnd', function () {
+                        that._batchAction('restore',task)
+                    })
+
+                    _cb()
                     break;
 
                 case 'delay':
