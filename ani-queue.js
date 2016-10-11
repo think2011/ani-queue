@@ -18,13 +18,20 @@
         construct: AniQueue,
 
         start: function (cb) {
-            this.queue.forEach(function (item) {
-                if(item.type !== 'add') return
-
+            var elemTask = this.queue.filter(function (item) {
+                return item.type === 'add'
+            })
+            elemTask.forEach(function (item) {
                 $(item.params[0]).hide()
             })
 
-            this._execute(cb)
+            this._execute(function () {
+                elemTask.forEach(function (item) {
+                    $(item.params[0]).removeClass(item.params[1]).removeClass('animated').css('animationDuration','')
+                })
+
+                cb && cb()
+            })
         },
 
         _execute: function (cb) {
@@ -44,16 +51,20 @@
                 case 'add':
                     var $elem = $(params[0])
 
+
                     $elem
                         .show()
                         .addClass(params[1]).addClass('animated')
-                        .on('webkitAnimationEnd', function () {
-                            $elem.removeClass(params[1]).removeClass('animated').css('animationDuration','')
-                        })
 
                     if(params[2] !== undefined) $elem.css('animationDuration', params[2] + 's')
 
-                    _cb()
+                    if(this.queue.length === 0) {
+                        $elem.on('webkitAnimationEnd', function () {
+                            _cb()
+                        })
+                    } else {
+                        _cb()
+                    }
                     break;
 
                 case 'delay':
