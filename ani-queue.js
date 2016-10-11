@@ -12,44 +12,46 @@
 }(this, function () {
     var AniQueue = function () {
         this.queue = []
-        this.elemTask = []
     }
 
     AniQueue.prototype = {
         construct: AniQueue,
 
         start: function (cb) {
-            this.elemTask = this.queue.filter(function (item) {
+            var that = this
+            var aniLen = 0
+            var isExecuteEnd = false
+            var isAniEnd = false
+            var elemTask = that.queue.filter(function (item) {
                 return item.type === 'add'
             })
-            this._batchAction('hide')
-            this._execute(cb)
-        },
 
-        _batchAction: function (action) {
-            var that = this
-            var elemTask = this.elemTask
-
-            var fnMap = {
-                hide: function () {
+            var finallyCb = function () {
+                if(isAniEnd && isExecuteEnd) {
                     elemTask.forEach(function (item) {
-                        $(item.params[0]).hide()
+                        $(item.params[0]).removeClass(item.params[1]).removeClass('animated').css('animationDuration','')
                     })
-                },
 
-                restore: function (task) {
-                    if(task === elemTask[elemTask.length-1]) {
-                        elemTask.forEach(function (item) {
-                            $(item.params[0]).removeClass(item.params[1]).removeClass('animated').css('animationDuration','')
-                        })
-
-                        that.elemTask = []
-                    }
+                    cb && cb()
                 }
             }
 
+            elemTask.forEach(function (item) {
+                var $item =  $(item.params[0])
 
-            fnMap[action].apply(this,Array.prototype.slice.call(arguments,1))
+                $item.hide()
+
+                $item.one('webkitAnimationEnd', function () {
+                    aniLen++
+                    isAniEnd = aniLen === elemTask.length
+                    finallyCb()
+                })
+            })
+
+            that._execute(function () {
+                isExecuteEnd = true
+                finallyCb()
+            })
         },
 
         _execute: function (cb) {
@@ -71,10 +73,6 @@
 
                     $elem.show().addClass(params[1]).addClass('animated')
                     if(params[2] !== undefined) $elem.css('animationDuration', params[2] + 's')
-
-                    $elem.on('webkitAnimationEnd', function () {
-                        that._batchAction('restore',task)
-                    })
 
                     _cb()
                     break;
