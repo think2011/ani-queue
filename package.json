@@ -1,6 +1,6 @@
 {
   "name": "ani-queue",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "配合 Animate.css 使用的动画队列工具",
   "main": "ani-queue.js",
   "scripts": {

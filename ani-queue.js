@@ -39,7 +39,9 @@
             elemTask.forEach(function (item) {
                 var $item =  $(item.params[0])
 
-                $item.hide()
+                if(that.queue.some(function (taskItem) {return taskItem.type === 'hide'})) {
+                    $item.hide()
+                }
 
                 $item.one('webkitAnimationEnd', function () {
                     aniLen++
@@ -52,6 +54,14 @@
                 isExecuteEnd = true
                 finallyCb()
             })
+        },
+
+        hide: function () {
+            this.queue.push({
+                type:'hide'
+            })
+
+            return this
         },
 
         _execute: function (cb) {
@@ -78,11 +88,12 @@
                     break;
 
                 case 'delay':
-                    setTimeout(_cb, params[0] * 1000)
+                    console.log(params[0] * 1000)
+                    setTimeout(_cb, (params[0] * 1000))
                     break;
 
                 default:
-                //
+                    _cb()
             }
         },
 
